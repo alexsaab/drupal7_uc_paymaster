@@ -240,9 +240,11 @@ function uc_paymaster_result()
             if ($_POST["LMI_HASH"] == $hash) {
                 $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
                 if ($order->order_total == $_POST['LMI_PAID_AMOUNT']) {
+                    uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
                     uc_order_update_status($_POST['LMI_PAYMENT_NO'], variable_get('paymaster_order_status', 'pending'));
                     uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .', array('@trans' => $_POST['LMI_SYS_PAYMENT_ID'], '@date' => $_POST['LMI_SYS_PAYMENT_DATE'], '@method' => $_POST['LMI_PAYMENT_METHOD'], '@payerid' => $_POST['LMI_PAYER_IDENTIFIER'], '@amount' => $_POST['LMI_PAID_AMOUNT'], '@currency' => $_POST['LMI_PAID_CURRENCY'])), 'admin');
                 } else {
+                    uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
                     uc_order_comment_save($order->order_id, 0, t('Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .', array('@trans' => $_POST['LMI_SYS_PAYMENT_ID'], '@date' => $_POST['LMI_SYS_PAYMENT_DATE'], '@method' => $_POST['LMI_PAYMENT_METHOD'], '@payerid' => $_POST['LMI_PAYER_IDENTIFIER'], '@amount' => $_POST['LMI_PAID_AMOUNT'], '@currency' => $_POST['LMI_PAID_CURRENCY'])), 'admin');
                 }
             }
