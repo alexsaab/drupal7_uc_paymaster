@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * Hook uninstall
+ */
+function uc_paymaster_uninstall()
+{
+    db_query("DELETE FROM {variable} WHERE name LIKE 'uc_paymaster_%%'");
+}

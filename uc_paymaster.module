@@ -1,0 +1,269 @@
+<?php
+
+/**
+ * Hook menu
+ * @return mixed
+ */
+function uc_paymaster_menu()
+{
+    $items['cart/paymaster/result'] = array(
+        'title'            => 'Result',
+        'page callback'    => 'uc_paymaster_result',
+        'access arguments' => array('access content'),
+        'type'             => MENU_CALLBACK,
+    );
+    $items['cart/paymaster/success'] = array(
+        'title'            => 'Congratulations',
+        'page callback'    => 'uc_paymaster_success',
+        'access arguments' => array('access content'),
+        'type'             => MENU_CALLBACK,
+    );
+    $items['cart/paymaster/fail'] = array(
+        'title'            => 'Sorry',
+        'page callback'    => 'uc_paymaster_fail',
+        'access arguments' => array('access content'),
+        'type'             => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+/**
+ * Hook form alter
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function uc_paymaster_form_alter(&$form, $form_state, $form_id)
+{
+    if ($form_id == 'uc_cart_checkout_form') {
+        $form['#submit'][] = 'uc_paymaster_checkout_submit';
+    }
+    if ($form_id == 'uc_cart_checkout_review_form' && ($order_id = intval($_SESSION['cart_order'])) > 0) {
+        $order = uc_order_load($order_id);
+        if ($order->payment_method == 'paymaster') {
+            unset($form['submit']);
+            $form['#prefix'] = '<table id="uc-paymaster-checkout-review-table"><tr><td>';
+            $form['#suffix'] = '</td><td>' . str_replace('accept-charset="UTF-8"', 'accept-charset="cp1251"', drupal_get_form('uc_paymaster_form', $order)) . '</td></tr></table>';
+        }
+    }
+}
+
+/**
+ * Hook payment method
+ * @return array
+ */
+function uc_paymaster_payment_method()
+{
+    $path = base_path() . drupal_get_path('module', 'uc_paymaster');
+    $methods[] = array(
+        'id'       => 'paymaster',
+        'name'     => t('PayMaster'),
+        'title'    => t('PayMaster') . '<br /><img src="' . $path . '/paymaster.png" style="position: relative; left: 2.5em;">',
+        'desc'     => t('Pay with PayMaster.'),
+        'callback' => 'uc_paymaster_method',
+        'weight'   => 6,
+        'checkout' => TRUE,
+        'backend'  => TRUE,
+    );
+    return $methods;
+}
+
+
+/**
+ * Hook method
+ * @param $op
+ * @param $arg1
+ * @return mixed
+ */
+function uc_paymaster_method($op, &$arg1)
+{
+    switch ($op) {
+        case 'settings':
+            $form['uc_paymaster_merchant_id'] = array(
+                '#type'          => 'textfield',
+                '#title'         => t('Merchant id'),
+                '#default_value' => variable_get('uc_paymaster_merchant_id', '')
+            );
+            $form['uc_paymaster_secret'] = array(
+                '#type'          => 'textfield',
+                '#title'         => t('Merchant secret key'),
+                '#default_value' => variable_get('uc_paymaster_secret', '')
+            );
+            $form['uc_paymaster_currency'] = array(
+                '#type'          => 'textfield',
+                '#title'         => t('Currency'),
+                '#default_value' => variable_get('uc_paymaster_currency', '')
+            );
+            $form['uc_paymaster_desc'] = array(
+                '#type'          => 'textfield',
+                '#title'         => t('Payment details'),
+                '#default_value' => variable_get('uc_paymaster_desc', '')
+            );
+            $form['uc_paymaster_order_status'] = array(
+                '#type'          => 'select',
+                '#title'         => t('Order status after payment'),
+                '#options'       => uc_paymaster_status_list(),
+                '#default_value' => variable_get('uc_paymaster_order_status', 'pending'),
+            );
+
+
+            //array for store of product types
+            $node_product_types = array();
+
+            //get all node types created Ubercart
+            $node_product_types = uc_product_types();
+
+            //create in each material type field with product superstatus
+            foreach ($node_product_types as $node_product_type) {
+                $form["uc_paymaster_product_{$node_product_type}_vat"] = array(
+                    '#type'          => 'select',
+                    '#title'         => t('VAT for @node_product_type for online invoicing', array('@node_product_type' => $node_product_type)),
+                    '#options'       => [
+                        'vat18'  => t('VAT 18%'),
+                        'vat10'  => t('VAT 10%'),
+                        'vat118' => t('VAT formula 18/118'),
+                        'vat110' => t('VAT formula 10/110'),
+                        'vat0'   => t('VAT 0%'),
+                        'no_vat' => t('No VAT'),
+                    ],
+                    '#default_value' => variable_get("uc_paymaster_product_{$node_product_type}_vat", 'vat18'),
+                );
+            }
+
+
+            $form['uc_paymaster_delivery_vat'] = array(
+                '#type'          => 'select',
+                '#title'         => t('VAT for delivery for online invoicing'),
+                '#options'       => [
+                    'vat18'  => t('VAT 18%'),
+                    'vat10'  => t('VAT 10%'),
+                    'vat118' => t('VAT formula 18/118'),
+                    'vat110' => t('VAT formula 10/110'),
+                    'vat0'   => t('VAT 0%'),
+                    'no_vat' => t('No VAT'),
+                ],
+                '#default_value' => variable_get('uc_paymaster_delivery_vat', 'no_vat'),
+            );
+    }
+
+    return $form;
+}
+
+/**
+ * Hook form
+ * @param $form_state
+ * @param null $order
+ * @return array
+ */
+function uc_paymaster_form($form_state, $order = NULL)
+{
+
+    $form = array(
+        '#id'     => 'checkout',
+        '#name'   => 'checkout',
+        '#method' => 'post',
+        '#action' => 'https://paymaster.ru/Payment/Init',
+    );
+
+    $fields = array(
+        'LMI_PAYMENT_AMOUNT' => $order->order_total,
+        'LMI_PAYMENT_DESC'   => variable_get('uc_paymaster_desc', ''),
+        'LMI_PAYMENT_NO'     => $order->order_id,
+        'LMI_MERCHANT_ID'    => variable_get('uc_paymaster_merchant_id', ''),
+        'LMI_CURRENCY'       => variable_get('uc_paymaster_currency', '')
+    );
+
+    //Добавляем продукты в форму
+    foreach ($order->products as $key => $product) {
+        $node = node_load($product->nid);
+        $product_type = $node->type;
+
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = $product->title;
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = $product->qty;
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $product->price;
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get("uc_paymaster_product_{$product_type}_vat", 'vat18');
+    }
+
+    //Добавляем доставку в форму
+    $key++;
+    if (isset($order->quote['rate']) && ($order->quote['rate'] > 0)) {
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = t('Delivery of order #@orderid', array('@orderid' => $order->order_id));
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = 1;
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $order->quote['rate'];
+        $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get('uc_paymaster_delivery_vat', 'no_vat');
+    }
+
+
+    foreach ($fields as $name => $value) {
+        $form[$name] = array('#type' => 'hidden', '#value' => $value);
+    }
+
+    $form['submit'] = array(
+        '#type'  => 'submit',
+        '#value' => variable_get('wmoney_checkout_button', t('Submit Order')),
+    );
+
+    return $form;
+}
+
+
+/**
+ * Hook status
+ * @return mixed
+ */
+function uc_paymaster_status_list()
+{
+    $datas = uc_order_status_list();
+    foreach ($datas as $data) {
+        $status[$data['id']] = $data['title'];
+    }
+    return $status;
+}
+
+
+/**
+ * Результат обработки платежа
+ */
+function uc_paymaster_result()
+{
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if ($_POST["LMI_PREREQUEST"] == "1" || $_POST["LMI_PREREQUEST"] == "2") {
+            echo "YES";
+            die;
+        } else {
+            $hash = base64_encode(pack("H*", md5($_POST["LMI_MERCHANT_ID"] . ";" . $_POST["LMI_PAYMENT_NO"] . ";" . $_POST["LMI_SYS_PAYMENT_ID"] . ";" . $_POST["LMI_SYS_PAYMENT_DATE"] . ";" . $_POST["LMI_PAYMENT_AMOUNT"] . ";" . $_POST["LMI_CURRENCY"] . ";" . $_POST["LMI_PAID_AMOUNT"] . ";" . $_POST["LMI_PAID_CURRENCY"] . ";" . $_POST["LMI_PAYMENT_SYSTEM"] . ";" . $_POST["LMI_SIM_MODE"] . ";" . variable_get('uc_paymaster_secret', ''))));
+
+            if ($_POST["LMI_HASH"] == $hash) {
+                $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
+                uc_order_update_status($_POST['LMI_PAYMENT_NO'], variable_get('paymaster_order_status', 'pending'));
+                uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .', array('@trans' => $_POST['LMI_SYS_PAYMENT_ID'], '@date' => $_POST['LMI_SYS_PAYMENT_DATE'], '@method' => $_POST['LMI_PAYMENT_METHOD'], '@payerid' => $_POST['LMI_PAYER_IDENTIFIER'], '@amount' => $_POST['LMI_PAID_AMOUNT'], '@currency' => $_POST['LMI_PAID_CURRENCY'])), 'admin');
+            }
+        }
+    }
+}
+
+/**
+ * Сообщение об успешном платеже
+ * @return string
+ */
+function uc_paymaster_success()
+{
+    //Сбрасываем содержимое корзины
+    uc_cart_empty(uc_cart_get_id());
+    $output = '';
+    drupal_set_title(t('Congratulations'));
+    drupal_set_message(t('Order was successfully paid!'));
+    return $output;
+}
+
+/**
+ * Сообщение о неуспешном платеже
+ * @return string
+ */
+function uc_paymaster_fail()
+{
+    $output = '';
+    drupal_set_title(t('Payment error'));
+    drupal_set_message(t('Unfortunately your order is not paid. Maybe you should try again?!'), 'error');
+    return $output;
+}
