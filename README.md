@@ -6,7 +6,7 @@ UC Paymaster module for Drupal 7
 
 1. Закачать файлы из архива через ftp в папку sites/all/modules/modules/ubercart/payment/uc_paymaster. 
 
-2. В директории сайта admin/store/settings/payment/edit/methods произвести настройки: 
+2. В директории сайта /admin/store/settings/payment/method/paymaster произвести настройки: 
 - Merchant id — идентификатор сайта (его можно взять в личном кабинете PayMaster);
 - Merchant secret key — секретный ключ (изначально задается в личном кабинете PayMaster);
 - Currency - валюта, а точнее ее код (для рублей RUB). Так смотрите коды валют по ISO 4217 на странице https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D0%B8_%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%B8%D1%84%D0%B8%D0%BA%D0%B0%D1%82%D0%BE%D1%80%D1%8B_%D0%B2%D0%B0%D0%BB%D1%8E%D1%82;

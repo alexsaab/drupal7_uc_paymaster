@@ -1,5 +1,19 @@
 <?php
 
+
+/**
+ * Implements hook_help().
+ */
+function uc_paymaster_help($path, $arg)
+{
+    switch ($path) {
+        case 'admin/store/settings/payment/method/%':
+            if ($arg[5] == 'paymaster') {
+                return '<p>' . t('Please check settings in PayMaster Merchant interface https://paymaster.ru/partners/ru and setup it in Drupal site.') . '</p>';
+            }
+    }
+}
+
 /**
  * Hook menu
  * @return mixed
@@ -33,34 +47,21 @@ function uc_paymaster_menu()
  * @param $form_state
  * @param $form_id
  */
-function uc_paymaster_form_alter(&$form, $form_state, $form_id)
-{
-    if ($form_id == 'uc_cart_checkout_form') {
-        $form['#submit'][] = 'uc_paymaster_checkout_submit';
-    }
-    if ($form_id == 'uc_cart_checkout_review_form' && ($order_id = intval($_SESSION['cart_order'])) > 0) {
-        $order = uc_order_load($order_id);
-        if ($order->payment_method == 'paymaster') {
-            unset($form['submit']);
-            $form['#prefix'] = '<table id="uc-paymaster-checkout-review-table"><tr><td>';
-            $form['#suffix'] = '</td><td>' . str_replace('accept-charset="UTF-8"', 'accept-charset="cp1251"', drupal_get_form('uc_paymaster_form', $order)) . '</td></tr></table>';
-        }
-    }
-}
+
 
 /**
- * Hook payment method
+ * Hook uc_payment_method
  * @return array
  */
-function uc_paymaster_payment_method()
+function uc_paymaster_uc_payment_method()
 {
     $path = base_path() . drupal_get_path('module', 'uc_paymaster');
-    $methods[] = array(
-        'id'       => 'paymaster',
+    $methods['paymaster'] = array(
         'name'     => t('PayMaster'),
         'title'    => t('PayMaster') . '<br /><img src="' . $path . '/paymaster.png" style="position: relative; left: 2.5em;">',
         'desc'     => t('Pay with PayMaster.'),
-        'callback' => 'uc_paymaster_method',
+        'callback' => 'uc_payment_method_paymaster',
+        'redirect' => 'uc_paymaster_form',
         'weight'   => 6,
         'checkout' => TRUE,
         'backend'  => TRUE,
@@ -70,13 +71,15 @@ function uc_paymaster_payment_method()
 
 
 /**
- * Hook method
+ * Callback method
  * @param $op
  * @param $arg1
  * @return mixed
  */
-function uc_paymaster_method($op, &$arg1)
+
+function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = NULL)
 {
+
     switch ($op) {
         case 'settings':
             $form['uc_paymaster_merchant_id'] = array(
@@ -155,7 +158,7 @@ function uc_paymaster_method($op, &$arg1)
  * @param null $order
  * @return array
  */
-function uc_paymaster_form($form_state, $order = NULL)
+function uc_paymaster_form($form, $form_state, $order = NULL)
 {
 
     $form = array(
@@ -198,9 +201,10 @@ function uc_paymaster_form($form_state, $order = NULL)
         $form[$name] = array('#type' => 'hidden', '#value' => $value);
     }
 
-    $form['submit'] = array(
+    $form['actions'] = array('#type' => 'actions');
+    $form['actions']['submit'] = array(
         '#type'  => 'submit',
-        '#value' => variable_get('wmoney_checkout_button', t('Submit Order')),
+        '#value' => t('Submit order'),
     );
 
     return $form;
