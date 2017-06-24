@@ -81,6 +81,13 @@ function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = 
 {
 
     switch ($op) {
+
+        case 'cart-details':
+            $build['policy'] = array(
+                '#markup' => '<p>' . t('After order confirmation you will be directed at PayMaster payment system.') . '</p>'
+            );
+            return $build;
+
         case 'settings':
             $form['uc_paymaster_merchant_id'] = array(
                 '#type'          => 'textfield',
@@ -91,6 +98,12 @@ function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = 
                 '#type'          => 'textfield',
                 '#title'         => t('Merchant secret key'),
                 '#default_value' => variable_get('uc_paymaster_secret', '')
+            );
+            $form['uc_paymaster_sign_method'] = array(
+                '#type'          => 'select',
+                '#title'         => t('Hash method for SIGN request option'),
+                '#options'       => uc_paymaster_sign_options(),
+                '#default_value' => variable_get('uc_paymaster_sign_method', 'md5'),
             );
             $form['uc_paymaster_currency'] = array(
                 '#type'          => 'textfield',
@@ -108,10 +121,6 @@ function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = 
                 '#options'       => uc_paymaster_status_list(),
                 '#default_value' => variable_get('uc_paymaster_order_status', 'pending'),
             );
-
-
-            //array for store of product types
-            $node_product_types = array();
 
             //get all node types created Ubercart
             $node_product_types = uc_product_types();
@@ -168,12 +177,22 @@ function uc_paymaster_form($form, $form_state, $order = NULL)
         '#action' => 'https://paymaster.ru/Payment/Init',
     );
 
+    $order_total = number_format($order->order_total, 2, '.', '');
+
     $fields = array(
-        'LMI_PAYMENT_AMOUNT' => $order->order_total,
+        'LMI_PAYMENT_AMOUNT' => $order_total,
         'LMI_PAYMENT_DESC'   => variable_get('uc_paymaster_desc', ''),
         'LMI_PAYMENT_NO'     => $order->order_id,
         'LMI_MERCHANT_ID'    => variable_get('uc_paymaster_merchant_id', ''),
-        'LMI_CURRENCY'       => variable_get('uc_paymaster_currency', '')
+        'LMI_CURRENCY'       => variable_get('uc_paymaster_currency', ''),
+        'SIGN'               => uc_paymaster_get_sign(
+            variable_get('uc_paymaster_merchant_id', ''),
+            $order_total,
+            $order->order_total,
+            variable_get('uc_paymaster_currency', ''),
+            variable_get('uc_paymaster_secret', ''),
+            variable_get('uc_paymaster_sign_method', 'md5')
+        ),
     );
 
     //Добавляем продукты в форму
@@ -207,12 +226,13 @@ function uc_paymaster_form($form, $form_state, $order = NULL)
         '#value' => t('Submit order'),
     );
 
+
     return $form;
 }
 
 
 /**
- * Hook status
+ * Return orders statuses
  * @return mixed
  */
 function uc_paymaster_status_list()
@@ -224,6 +244,42 @@ function uc_paymaster_status_list()
     return $status;
 }
 
+/**
+ * Функция возвращает подписанный запрос непонятно для чего?!
+ * @param $merchant_id
+ * @param $order_id
+ * @param $amount
+ * @param $lmi_currency
+ * @param $secret_key
+ * @param string $sign_method
+ */
+function uc_paymaster_get_sign($merchant_id, $order_id, $amount, $lmi_currency, $secret_key, $sign_method = 'md5')
+{
+    $plain_sign = $merchant_id . $order_id . $amount . $lmi_currency . $secret_key;
+    $sign = base64_encode(hash($sign_method, $plain_sign, true));
+
+    return $sign;
+}
+
+
+/**
+ * Функция возвращает hash по определенному алгоритму
+ * @param $merchant_id
+ * @param $order_id
+ * @param $amount
+ * @param $lmi_currency
+ * @param $secret_key
+ * @param string $sign_method
+ */
+function uc_paymaster_get_hash($LMI_MERCHANT_ID, $LMI_PAYMENT_NO, $LMI_SYS_PAYMENT_ID, $LMI_SYS_PAYMENT_DATE, $LMI_PAYMENT_AMOUNT, $LMI_CURRENCY, $LMI_PAID_AMOUNT, $LMI_PAID_CURRENCY, $LMI_PAYMENT_SYSTEM, $LMI_SIM_MODE, $SECRET, $hash_method = 'md5')
+{
+    $string = $LMI_MERCHANT_ID . ";" . $LMI_PAYMENT_NO . ";" . $LMI_SYS_PAYMENT_ID . ";" . $LMI_SYS_PAYMENT_DATE . ";" . $LMI_PAYMENT_AMOUNT . ";" . $LMI_CURRENCY . ";" . $LMI_PAID_AMOUNT . ";" . $LMI_PAID_CURRENCY . ";" . $LMI_PAYMENT_SYSTEM . ";" . $LMI_SIM_MODE . ";" . $SECRET;
+
+    $hash = base64_encode(hash($hash_method, $string, true));
+
+    return $hash;
+}
+
 
 /**
  * Результат обработки платежа
@@ -231,21 +287,52 @@ function uc_paymaster_status_list()
 function uc_paymaster_result()
 {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if ($_POST["LMI_PREREQUEST"] == "1" || $_POST["LMI_PREREQUEST"] == "2") {
-            echo "YES";
-            die;
-        } else {
-            $hash = base64_encode(pack("H*", md5($_POST["LMI_MERCHANT_ID"] . ";" . $_POST["LMI_PAYMENT_NO"] . ";" . $_POST["LMI_SYS_PAYMENT_ID"] . ";" . $_POST["LMI_SYS_PAYMENT_DATE"] . ";" . $_POST["LMI_PAYMENT_AMOUNT"] . ";" . $_POST["LMI_CURRENCY"] . ";" . $_POST["LMI_PAID_AMOUNT"] . ";" . $_POST["LMI_PAID_CURRENCY"] . ";" . $_POST["LMI_PAYMENT_SYSTEM"] . ";" . $_POST["LMI_SIM_MODE"] . ";" . variable_get('uc_paymaster_secret', ''))));
 
+        $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
+
+        if (!$order) {
+            echo 'Fail';
+            die;
+        }
+
+        $order_total = number_format($order->order_total, 2, '.', '');
+
+        if ($_POST["LMI_PREREQUEST"]) {
+            if (($_POST['LMI_MERCHANT_ID'] == variable_get('uc_paymaster_merchant_id', '')) && ($_POST['LMI_PAYMENT_AMOUNT'] == $order_total)) {
+                echo 'YES';
+                exit;
+            } else {
+                echo 'FAIL';
+                exit;
+            }
+        } else {
+
+            $hash = uc_paymaster_get_hash(variable_get('uc_paymaster_merchant_id', ''), $_POST["LMI_PAYMENT_NO"], $_POST["LMI_SYS_PAYMENT_ID"], $_POST["LMI_SYS_PAYMENT_DATE"], $order_total, $_POST["LMI_CURRENCY"], $_POST["LMI_PAID_AMOUNT"], $_POST["LMI_PAID_CURRENCY"], $_POST["LMI_PAYMENT_SYSTEM"], $_POST["LMI_SIM_MODE"], variable_get('uc_paymaster_secret', ''));
             if ($_POST["LMI_HASH"] == $hash) {
-                $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
-                if ($order->order_total == $_POST['LMI_PAID_AMOUNT']) {
+                $sign = uc_paymaster_get_sign($_POST["LMI_MERCHANT_ID"], $_POST["LMI_PAYMENT_NO"], $order_total, variable_get('uc_paymaster_currency', ''), variable_get('uc_paymaster_secret', ''));
+                if ($sign == $_POST['SIGN']) {
                     uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
                     uc_order_update_status($_POST['LMI_PAYMENT_NO'], variable_get('paymaster_order_status', 'pending'));
-                    uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .', array('@trans' => $_POST['LMI_SYS_PAYMENT_ID'], '@date' => $_POST['LMI_SYS_PAYMENT_DATE'], '@method' => $_POST['LMI_PAYMENT_METHOD'], '@payerid' => $_POST['LMI_PAYER_IDENTIFIER'], '@amount' => $_POST['LMI_PAID_AMOUNT'], '@currency' => $_POST['LMI_PAID_CURRENCY'])), 'admin');
+                    uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
+                        array(
+                            '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
+                            '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
+                            '@method'   => $_POST['LMI_PAYMENT_METHOD'],
+                            '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
+                            '@amount'   => $_POST['LMI_PAID_AMOUNT'],
+                            '@currency' => $_POST['LMI_PAID_CURRENCY'])
+                    ), 'admin');
                 } else {
                     uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
-                    uc_order_comment_save($order->order_id, 0, t('Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .', array('@trans' => $_POST['LMI_SYS_PAYMENT_ID'], '@date' => $_POST['LMI_SYS_PAYMENT_DATE'], '@method' => $_POST['LMI_PAYMENT_METHOD'], '@payerid' => $_POST['LMI_PAYER_IDENTIFIER'], '@amount' => $_POST['LMI_PAID_AMOUNT'], '@currency' => $_POST['LMI_PAID_CURRENCY'])), 'admin');
+                    uc_order_comment_save($order->order_id, 0, t('Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
+                        array(
+                            '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
+                            '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
+                            '@method'   => $_POST['LMI_PAYMENT_METHOD'],
+                            '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
+                            '@amount'   => $_POST['LMI_PAID_AMOUNT'],
+                            '@currency' => $_POST['LMI_PAID_CURRENCY'])
+                    ), 'admin');
                 }
             }
         }
