@@ -244,6 +244,20 @@ function uc_paymaster_status_list()
     return $status;
 }
 
+
+/**
+ * Return request sign options (method of hash)
+ * @return mixed
+ */
+function uc_paymaster_sign_options()
+{
+    return array(
+        'sha256' => 'sha256',
+        'md5'    => 'md5',
+        'sha1'   => 'sha1',
+    );
+}
+
 /**
  * Функция возвращает подписанный запрос непонятно для чего?!
  * @param $merchant_id
