@@ -4,41 +4,39 @@
 /**
  * Implements hook_help().
  */
-function uc_paymaster_help($path, $arg)
-{
-    switch ($path) {
-        case 'admin/store/settings/payment/method/%':
-            if ($arg[5] == 'paymaster') {
-                return '<p>' . t('Please check settings in PayMaster Merchant interface https://paymaster.ru/partners/ru and setup it in Drupal site.') . '</p>';
-            }
-    }
+function uc_paymaster_help($path, $arg) {
+  switch ($path) {
+    case 'admin/store/settings/payment/method/%':
+      if ($arg[5] == 'paymaster') {
+        return '<p>' . t('Please check settings in PayMaster Merchant interface https://paymaster.ru/partners/ru and setup it in Drupal site.') . '</p>';
+      }
+  }
 }
 
 /**
  * Hook menu
  * @return mixed
  */
-function uc_paymaster_menu()
-{
-    $items['cart/paymaster/result'] = array(
-        'title'            => 'Result',
-        'page callback'    => 'uc_paymaster_result',
-        'access arguments' => array('access content'),
-        'type'             => MENU_CALLBACK,
-    );
-    $items['cart/paymaster/success'] = array(
-        'title'            => 'Congratulations',
-        'page callback'    => 'uc_paymaster_success',
-        'access arguments' => array('access content'),
-        'type'             => MENU_CALLBACK,
-    );
-    $items['cart/paymaster/fail'] = array(
-        'title'            => 'Sorry',
-        'page callback'    => 'uc_paymaster_fail',
-        'access arguments' => array('access content'),
-        'type'             => MENU_CALLBACK,
-    );
-    return $items;
+function uc_paymaster_menu() {
+  $items['cart/paymaster/result'] = array(
+    'title'            => 'Result',
+    'page callback'    => 'uc_paymaster_result',
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK,
+  );
+  $items['cart/paymaster/success'] = array(
+    'title'            => 'Congratulations',
+    'page callback'    => 'uc_paymaster_success',
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK,
+  );
+  $items['cart/paymaster/fail'] = array(
+    'title'            => 'Sorry',
+    'page callback'    => 'uc_paymaster_fail',
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK,
+  );
+  return $items;
 }
 
 /**
@@ -53,20 +51,19 @@ function uc_paymaster_menu()
  * Hook uc_payment_method
  * @return array
  */
-function uc_paymaster_uc_payment_method()
-{
-    $path = base_path() . drupal_get_path('module', 'uc_paymaster');
-    $methods['paymaster'] = array(
-        'name'     => t('PayMaster'),
-        'title'    => t('PayMaster') . '<br /><img src="' . $path . '/paymaster.png" style="position: relative; left: 2.5em;">',
-        'desc'     => t('Pay with PayMaster.'),
-        'callback' => 'uc_payment_method_paymaster',
-        'redirect' => 'uc_paymaster_form',
-        'weight'   => 6,
-        'checkout' => TRUE,
-        'backend'  => TRUE,
-    );
-    return $methods;
+function uc_paymaster_uc_payment_method() {
+  $path = base_path() . drupal_get_path('module', 'uc_paymaster');
+  $methods['paymaster'] = array(
+    'name'     => t('PayMaster'),
+    'title'    => t('PayMaster') . '<br /><img src="' . $path . '/paymaster.png" style="position: relative; left: 2.5em;">',
+    'desc'     => t('Pay with PayMaster.'),
+    'callback' => 'uc_payment_method_paymaster',
+    'redirect' => 'uc_paymaster_form',
+    'weight'   => 6,
+    'checkout' => TRUE,
+    'backend'  => TRUE,
+  );
+  return $methods;
 }
 
 
@@ -77,88 +74,87 @@ function uc_paymaster_uc_payment_method()
  * @return mixed
  */
 
-function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = NULL)
-{
+function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = NULL) {
 
-    switch ($op) {
+  switch ($op) {
 
-        case 'cart-details':
-            $build['policy'] = array(
-                '#markup' => '<p>' . t('After order confirmation you will be directed at PayMaster payment system.') . '</p>'
-            );
-            return $build;
+    case 'cart-details':
+      $build['policy'] = array(
+        '#markup' => '<p>' . t('After order confirmation you will be directed at PayMaster payment system.') . '</p>'
+      );
+      return $build;
 
-        case 'settings':
-            $form['uc_paymaster_merchant_id'] = array(
-                '#type'          => 'textfield',
-                '#title'         => t('Merchant id'),
-                '#default_value' => variable_get('uc_paymaster_merchant_id', '')
-            );
-            $form['uc_paymaster_secret'] = array(
-                '#type'          => 'textfield',
-                '#title'         => t('Merchant secret key'),
-                '#default_value' => variable_get('uc_paymaster_secret', '')
-            );
-            $form['uc_paymaster_sign_method'] = array(
-                '#type'          => 'select',
-                '#title'         => t('Hash method for SIGN request option'),
-                '#options'       => uc_paymaster_sign_options(),
-                '#default_value' => variable_get('uc_paymaster_sign_method', 'md5'),
-            );
-            $form['uc_paymaster_currency'] = array(
-                '#type'          => 'textfield',
-                '#title'         => t('Currency'),
-                '#default_value' => variable_get('uc_paymaster_currency', '')
-            );
-            $form['uc_paymaster_desc'] = array(
-                '#type'          => 'textfield',
-                '#title'         => t('Payment details'),
-                '#default_value' => variable_get('uc_paymaster_desc', '')
-            );
-            $form['uc_paymaster_order_status'] = array(
-                '#type'          => 'select',
-                '#title'         => t('Order status after payment'),
-                '#options'       => uc_paymaster_status_list(),
-                '#default_value' => variable_get('uc_paymaster_order_status', 'pending'),
-            );
+    case 'settings':
+      $form['uc_paymaster_merchant_id'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Merchant id'),
+        '#default_value' => variable_get('uc_paymaster_merchant_id', '')
+      );
+      $form['uc_paymaster_secret'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Merchant secret key'),
+        '#default_value' => variable_get('uc_paymaster_secret', '')
+      );
+      $form['uc_paymaster_sign_method'] = array(
+        '#type'          => 'select',
+        '#title'         => t('Hash method for SIGN request option'),
+        '#options'       => uc_paymaster_sign_options(),
+        '#default_value' => variable_get('uc_paymaster_sign_method', 'md5'),
+      );
+      $form['uc_paymaster_currency'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Currency'),
+        '#default_value' => variable_get('uc_paymaster_currency', '')
+      );
+      $form['uc_paymaster_desc'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Payment details'),
+        '#default_value' => variable_get('uc_paymaster_desc', '')
+      );
+      $form['uc_paymaster_order_status'] = array(
+        '#type'          => 'select',
+        '#title'         => t('Order status after payment'),
+        '#options'       => uc_paymaster_status_list(),
+        '#default_value' => variable_get('uc_paymaster_order_status', 'pending'),
+      );
 
-            //get all node types created Ubercart
-            $node_product_types = uc_product_types();
+      //get all node types created Ubercart
+      $node_product_types = uc_product_types();
 
-            //create in each material type field with product superstatus
-            foreach ($node_product_types as $node_product_type) {
-                $form["uc_paymaster_product_{$node_product_type}_vat"] = array(
-                    '#type'          => 'select',
-                    '#title'         => t('VAT for @node_product_type for online invoicing', array('@node_product_type' => $node_product_type)),
-                    '#options'       => [
-                        'vat18'  => t('VAT 18%'),
-                        'vat10'  => t('VAT 10%'),
-                        'vat118' => t('VAT formula 18/118'),
-                        'vat110' => t('VAT formula 10/110'),
-                        'vat0'   => t('VAT 0%'),
-                        'no_vat' => t('No VAT'),
-                    ],
-                    '#default_value' => variable_get("uc_paymaster_product_{$node_product_type}_vat", 'vat18'),
-                );
-            }
+      //create in each material type field with product superstatus
+      foreach ($node_product_types as $node_product_type) {
+        $form["uc_paymaster_product_{$node_product_type}_vat"] = array(
+          '#type'          => 'select',
+          '#title'         => t('VAT for @node_product_type for online invoicing', array('@node_product_type' => $node_product_type)),
+          '#options'       => [
+            'vat18'  => t('VAT 18%'),
+            'vat10'  => t('VAT 10%'),
+            'vat118' => t('VAT formula 18/118'),
+            'vat110' => t('VAT formula 10/110'),
+            'vat0'   => t('VAT 0%'),
+            'no_vat' => t('No VAT'),
+          ],
+          '#default_value' => variable_get("uc_paymaster_product_{$node_product_type}_vat", 'vat18'),
+        );
+      }
 
 
-            $form['uc_paymaster_delivery_vat'] = array(
-                '#type'          => 'select',
-                '#title'         => t('VAT for delivery for online invoicing'),
-                '#options'       => [
-                    'vat18'  => t('VAT 18%'),
-                    'vat10'  => t('VAT 10%'),
-                    'vat118' => t('VAT formula 18/118'),
-                    'vat110' => t('VAT formula 10/110'),
-                    'vat0'   => t('VAT 0%'),
-                    'no_vat' => t('No VAT'),
-                ],
-                '#default_value' => variable_get('uc_paymaster_delivery_vat', 'no_vat'),
-            );
-    }
+      $form['uc_paymaster_delivery_vat'] = array(
+        '#type'          => 'select',
+        '#title'         => t('VAT for delivery for online invoicing'),
+        '#options'       => [
+          'vat18'  => t('VAT 18%'),
+          'vat10'  => t('VAT 10%'),
+          'vat118' => t('VAT formula 18/118'),
+          'vat110' => t('VAT formula 10/110'),
+          'vat0'   => t('VAT 0%'),
+          'no_vat' => t('No VAT'),
+        ],
+        '#default_value' => variable_get('uc_paymaster_delivery_vat', 'no_vat'),
+      );
+  }
 
-    return $form;
+  return $form;
 }
 
 /**
@@ -167,67 +163,66 @@ function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = 
  * @param null $order
  * @return array
  */
-function uc_paymaster_form($form, $form_state, $order = NULL)
-{
+function uc_paymaster_form($form, $form_state, $order = NULL) {
 
-    $form = array(
-        '#id'     => 'checkout',
-        '#name'   => 'checkout',
-        '#method' => 'post',
-        '#action' => 'https://paymaster.ru/Payment/Init',
-    );
+  $form = array(
+    '#id'     => 'checkout',
+    '#name'   => 'checkout',
+    '#method' => 'post',
+    '#action' => 'https://paymaster.ru/Payment/Init',
+  );
 
-    $order_total = number_format($order->order_total, 2, '.', '');
+  $order_total = number_format($order->order_total, 2, '.', '');
 
-    $fields = array(
-        'LMI_PAYMENT_AMOUNT' => $order_total,
-        'LMI_PAYMENT_DESC'   => variable_get('uc_paymaster_desc', ''),
-        'LMI_PAYMENT_NO'     => $order->order_id,
-        'LMI_MERCHANT_ID'    => variable_get('uc_paymaster_merchant_id', ''),
-        'LMI_CURRENCY'       => variable_get('uc_paymaster_currency', ''),
-        'SIGN'               => uc_paymaster_get_sign(
-            variable_get('uc_paymaster_merchant_id', ''),
-            $order_total,
-            $order->order_total,
-            variable_get('uc_paymaster_currency', ''),
-            variable_get('uc_paymaster_secret', ''),
-            variable_get('uc_paymaster_sign_method', 'md5')
-        ),
-    );
+  $fields = array(
+    'LMI_PAYMENT_AMOUNT' => $order_total,
+    'LMI_PAYMENT_DESC'   => variable_get('uc_paymaster_desc', ''),
+    'LMI_PAYMENT_NO'     => $order->order_id,
+    'LMI_MERCHANT_ID'    => variable_get('uc_paymaster_merchant_id', ''),
+    'LMI_CURRENCY'       => variable_get('uc_paymaster_currency', ''),
+    'SIGN'               => uc_paymaster_get_sign(
+      variable_get('uc_paymaster_merchant_id', ''),
+      $order_total,
+      $order->order_total,
+      variable_get('uc_paymaster_currency', ''),
+      variable_get('uc_paymaster_secret', ''),
+      variable_get('uc_paymaster_sign_method', 'md5')
+    ),
+  );
 
-    //Добавляем продукты в форму
-    foreach ($order->products as $key => $product) {
-        $node = node_load($product->nid);
-        $product_type = $node->type;
+  //Добавляем продукты в форму
+  foreach ($order->products as $key => $product) {
+    $node = node_load($product->nid);
+    $product_type = $node->type;
 
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = $product->title;
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = $product->qty;
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $product->price;
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get("uc_paymaster_product_{$product_type}_vat", 'vat18');
-    }
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = $product->title;
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = $product->qty;
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $product->price;
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get("uc_paymaster_product_{$product_type}_vat", 'vat18');
+  }
 
-    //Добавляем доставку в форму
-    $key++;
-    if (isset($order->quote['rate']) && ($order->quote['rate'] > 0)) {
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = t('Delivery of order #@orderid', array('@orderid' => $order->order_id));
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = 1;
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $order->quote['rate'];
-        $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get('uc_paymaster_delivery_vat', 'no_vat');
-    }
-
-
-    foreach ($fields as $name => $value) {
-        $form[$name] = array('#type' => 'hidden', '#value' => $value);
-    }
-
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array(
-        '#type'  => 'submit',
-        '#value' => t('Submit order'),
-    );
+  //Добавляем доставку в форму
+  $key++;
+  if (isset($order->quote['rate']) && ($order->quote['rate'] > 0)) {
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].NAME"] = t('Delivery of order #@orderid', array('@orderid' => $order->order_id));
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].QTY"] = 1;
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].PRICE"] = $order->quote['rate'];
+    $fields["LMI_SHOPPINGCART.ITEM[{$key}].TAX"] = variable_get('uc_paymaster_delivery_vat', 'no_vat');
+  }
 
 
-    return $form;
+  foreach ($fields as $name => $value) {
+    $form[$name] = array('#type' => 'hidden', '#value' => $value);
+  }
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Submit order'),
+  );
+
+
+  return $form;
 }
 
 
@@ -235,13 +230,12 @@ function uc_paymaster_form($form, $form_state, $order = NULL)
  * Return orders statuses
  * @return mixed
  */
-function uc_paymaster_status_list()
-{
-    $datas = uc_order_status_list();
-    foreach ($datas as $data) {
-        $status[$data['id']] = $data['title'];
-    }
-    return $status;
+function uc_paymaster_status_list() {
+  $datas = uc_order_status_list();
+  foreach ($datas as $data) {
+    $status[$data['id']] = $data['title'];
+  }
+  return $status;
 }
 
 
@@ -249,13 +243,12 @@ function uc_paymaster_status_list()
  * Return request sign options (method of hash)
  * @return mixed
  */
-function uc_paymaster_sign_options()
-{
-    return array(
-        'sha256' => 'sha256',
-        'md5'    => 'md5',
-        'sha1'   => 'sha1',
-    );
+function uc_paymaster_sign_options() {
+  return array(
+    'sha256' => 'sha256',
+    'md5'    => 'md5',
+    'sha1'   => 'sha1',
+  );
 }
 
 /**
@@ -267,12 +260,11 @@ function uc_paymaster_sign_options()
  * @param $secret_key
  * @param string $sign_method
  */
-function uc_paymaster_get_sign($merchant_id, $order_id, $amount, $lmi_currency, $secret_key, $sign_method = 'md5')
-{
-    $plain_sign = $merchant_id . $order_id . $amount . $lmi_currency . $secret_key;
-    $sign = base64_encode(hash($sign_method, $plain_sign, true));
+function uc_paymaster_get_sign($merchant_id, $order_id, $amount, $lmi_currency, $secret_key, $sign_method = 'md5') {
+  $plain_sign = $merchant_id . $order_id . $amount . $lmi_currency . $secret_key;
+  $sign = base64_encode(hash($sign_method, $plain_sign, TRUE));
 
-    return $sign;
+  return $sign;
 }
 
 
@@ -285,96 +277,97 @@ function uc_paymaster_get_sign($merchant_id, $order_id, $amount, $lmi_currency, 
  * @param $secret_key
  * @param string $sign_method
  */
-function uc_paymaster_get_hash($LMI_MERCHANT_ID, $LMI_PAYMENT_NO, $LMI_SYS_PAYMENT_ID, $LMI_SYS_PAYMENT_DATE, $LMI_PAYMENT_AMOUNT, $LMI_CURRENCY, $LMI_PAID_AMOUNT, $LMI_PAID_CURRENCY, $LMI_PAYMENT_SYSTEM, $LMI_SIM_MODE, $SECRET, $hash_method = 'md5')
-{
-    $string = $LMI_MERCHANT_ID . ";" . $LMI_PAYMENT_NO . ";" . $LMI_SYS_PAYMENT_ID . ";" . $LMI_SYS_PAYMENT_DATE . ";" . $LMI_PAYMENT_AMOUNT . ";" . $LMI_CURRENCY . ";" . $LMI_PAID_AMOUNT . ";" . $LMI_PAID_CURRENCY . ";" . $LMI_PAYMENT_SYSTEM . ";" . $LMI_SIM_MODE . ";" . $SECRET;
+function uc_paymaster_get_hash($LMI_MERCHANT_ID, $LMI_PAYMENT_NO, $LMI_SYS_PAYMENT_ID, $LMI_SYS_PAYMENT_DATE, $LMI_PAYMENT_AMOUNT, $LMI_CURRENCY, $LMI_PAID_AMOUNT, $LMI_PAID_CURRENCY, $LMI_PAYMENT_SYSTEM, $LMI_SIM_MODE, $SECRET, $hash_method = 'md5') {
+  $string = $LMI_MERCHANT_ID . ";" . $LMI_PAYMENT_NO . ";" . $LMI_SYS_PAYMENT_ID . ";" . $LMI_SYS_PAYMENT_DATE . ";" . $LMI_PAYMENT_AMOUNT . ";" . $LMI_CURRENCY . ";" . $LMI_PAID_AMOUNT . ";" . $LMI_PAID_CURRENCY . ";" . $LMI_PAYMENT_SYSTEM . ";" . $LMI_SIM_MODE . ";" . $SECRET;
 
-    $hash = base64_encode(hash($hash_method, $string, true));
+  $hash = base64_encode(hash($hash_method, $string, TRUE));
 
-    return $hash;
+  return $hash;
 }
 
 
 /**
  * Результат обработки платежа
  */
-function uc_paymaster_result()
-{
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+function uc_paymaster_result() {
+  if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-        $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
+    $order = uc_order_load($_POST['LMI_PAYMENT_NO']);
 
-        if (!$order) {
-            echo 'Fail';
-            die;
-        }
-
-        $order_total = number_format($order->order_total, 2, '.', '');
-
-        if ($_POST["LMI_PREREQUEST"]) {
-            if (($_POST['LMI_MERCHANT_ID'] == variable_get('uc_paymaster_merchant_id', '')) && ($_POST['LMI_PAYMENT_AMOUNT'] == $order_total)) {
-                echo 'YES';
-                exit;
-            } else {
-                echo 'FAIL';
-                exit;
-            }
-        } else {
-
-            $hash = uc_paymaster_get_hash(variable_get('uc_paymaster_merchant_id', ''), $_POST["LMI_PAYMENT_NO"], $_POST["LMI_SYS_PAYMENT_ID"], $_POST["LMI_SYS_PAYMENT_DATE"], $order_total, $_POST["LMI_CURRENCY"], $_POST["LMI_PAID_AMOUNT"], $_POST["LMI_PAID_CURRENCY"], $_POST["LMI_PAYMENT_SYSTEM"], $_POST["LMI_SIM_MODE"], variable_get('uc_paymaster_secret', ''));
-            if ($_POST["LMI_HASH"] == $hash) {
-                $sign = uc_paymaster_get_sign($_POST["LMI_MERCHANT_ID"], $_POST["LMI_PAYMENT_NO"], $order_total, variable_get('uc_paymaster_currency', ''), variable_get('uc_paymaster_secret', ''));
-                if ($sign == $_POST['SIGN']) {
-                    uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
-                    uc_order_update_status($_POST['LMI_PAYMENT_NO'], variable_get('paymaster_order_status', 'pending'));
-                    uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
-                        array(
-                            '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
-                            '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
-                            '@method'   => $_POST['LMI_PAYMENT_METHOD'],
-                            '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
-                            '@amount'   => $_POST['LMI_PAID_AMOUNT'],
-                            '@currency' => $_POST['LMI_PAID_CURRENCY'])
-                    ), 'admin');
-                } else {
-                    uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
-                    uc_order_comment_save($order->order_id, 0, t('Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
-                        array(
-                            '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
-                            '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
-                            '@method'   => $_POST['LMI_PAYMENT_METHOD'],
-                            '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
-                            '@amount'   => $_POST['LMI_PAID_AMOUNT'],
-                            '@currency' => $_POST['LMI_PAID_CURRENCY'])
-                    ), 'admin');
-                }
-            }
-        }
+    if (!$order) {
+      echo 'Fail';
+      die;
     }
+
+    $order_total = number_format($order->order_total, 2, '.', '');
+
+    if ($_POST["LMI_PREREQUEST"]) {
+      if (($_POST['LMI_MERCHANT_ID'] == variable_get('uc_paymaster_merchant_id', '')) && ($_POST['LMI_PAYMENT_AMOUNT'] == $order_total)) {
+        echo 'YES';
+        exit;
+      }
+      else {
+        echo 'FAIL';
+        exit;
+      }
+    }
+    else {
+
+      $hash = uc_paymaster_get_hash($_POST["LMI_MERCHANT_ID"], $_POST["LMI_PAYMENT_NO"], $_POST["LMI_SYS_PAYMENT_ID"], $_POST["LMI_SYS_PAYMENT_DATE"], $order_total, $_POST["LMI_CURRENCY"], $_POST["LMI_PAID_AMOUNT"], $_POST["LMI_PAID_CURRENCY"], $_POST["LMI_PAYMENT_SYSTEM"], $_POST["LMI_SIM_MODE"], variable_get('uc_paymaster_secret', ''), variable_get('uc_paymaster_sign_method', 'md5'));
+      if ($_POST["LMI_HASH"] == $hash) {
+        $sign = uc_paymaster_get_sign($_POST["LMI_MERCHANT_ID"], $_POST["LMI_PAYMENT_NO"], $_POST["LMI_PAID_AMOUNT"], $_POST["LMI_PAID_CURRENCY"], variable_get('uc_paymaster_secret', ''), variable_get('uc_paymaster_sign_method', 'md5'));
+        if ($sign == $_POST['SIGN']) {
+          uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
+          uc_order_update_status($_POST['LMI_PAYMENT_NO'], variable_get('paymaster_order_status', 'pending'));
+          uc_order_comment_save($order->order_id, 0, t('Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
+            array(
+              '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
+              '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
+              '@method'   => $_POST['LMI_PAYMENT_METHOD'],
+              '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
+              '@amount'   => $_POST['LMI_PAID_AMOUNT'],
+              '@currency' => $_POST['LMI_PAID_CURRENCY']
+            )
+          ), 'admin');
+        }
+        else {
+          uc_payment_enter($order->order_id, 'paymaster', $_POST['LMI_PAID_AMOUNT'], 0, NULL, t('Payment received from PayMaster'));
+          uc_order_comment_save($order->order_id, 0, t('Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency .',
+            array(
+              '@trans'    => $_POST['LMI_SYS_PAYMENT_ID'],
+              '@date'     => $_POST['LMI_SYS_PAYMENT_DATE'],
+              '@method'   => $_POST['LMI_PAYMENT_METHOD'],
+              '@payerid'  => $_POST['LMI_PAYER_IDENTIFIER'],
+              '@amount'   => $_POST['LMI_PAID_AMOUNT'],
+              '@currency' => $_POST['LMI_PAID_CURRENCY']
+            )
+          ), 'admin');
+        }
+      }
+    }
+  }
 }
 
 /**
  * Сообщение об успешном платеже
  * @return string
  */
-function uc_paymaster_success()
-{
-    //Сбрасываем содержимое корзины
-    uc_cart_empty(uc_cart_get_id());
-    $output = '';
-    drupal_set_title(t('Congratulations'));
-    drupal_set_message(t('Order was successfully paid!'));
-    return $output;
+function uc_paymaster_success() {
+  //Сбрасываем содержимое корзины
+  uc_cart_empty(uc_cart_get_id());
+  $output = '';
+  drupal_set_title(t('Congratulations'));
+  drupal_set_message(t('Order was successfully paid!'));
+  return $output;
 }
 
 /**
  * Сообщение о неуспешном платеже
  * @return string
  */
-function uc_paymaster_fail()
-{
-    $output = '';
-    drupal_set_title(t('Payment error'));
-    drupal_set_message(t('Unfortunately your order is not paid. Maybe you should try again?!'), 'error');
-    return $output;
+function uc_paymaster_fail() {
+  $output = '';
+  drupal_set_title(t('Payment error'));
+  drupal_set_message(t('Unfortunately your order is not paid. Maybe you should try again?!'), 'error');
+  return $output;
 }
