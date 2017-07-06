@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2017-06-23 13:27+0300\n"
+"POT-Creation-Date: 2017-07-07 01:09+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -19,99 +19,119 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: uc_paymaster.module:60;61 uc_paymaster.info:0
+#: uc_paymaster.module:11
+msgid "Please check settings in PayMaster Merchant interface https://paymaster.ru/partners/ru and setup it in Drupal site."
+msgstr ""
+
+#: uc_paymaster.module:57;58 uc_paymaster.info:0
 msgid "PayMaster"
 msgstr ""
 
-#: uc_paymaster.module:62
+#: uc_paymaster.module:59
 msgid "Pay with PayMaster."
 msgstr ""
 
-#: uc_paymaster.module:84
+#: uc_paymaster.module:83
+msgid "After order confirmation you will be directed at PayMaster payment system."
+msgstr ""
+
+#: uc_paymaster.module:90
 msgid "Merchant id"
 msgstr ""
 
-#: uc_paymaster.module:89
+#: uc_paymaster.module:95
 msgid "Merchant secret key"
 msgstr ""
 
-#: uc_paymaster.module:94
+#: uc_paymaster.module:100
+msgid "Hash method for SIGN request option"
+msgstr ""
+
+#: uc_paymaster.module:106
 msgid "Currency"
 msgstr ""
 
-#: uc_paymaster.module:99
+#: uc_paymaster.module:111
 msgid "Payment details"
 msgstr ""
 
-#: uc_paymaster.module:104
+#: uc_paymaster.module:116
 msgid "Order status after payment"
 msgstr ""
 
-#: uc_paymaster.module:120
+#: uc_paymaster.module:128
 msgid "VAT for @node_product_type for online invoicing"
 msgstr ""
 
-#: uc_paymaster.module:122;138
+#: uc_paymaster.module:130;146
 msgid "VAT 18%"
 msgstr ""
 
-#: uc_paymaster.module:123;139
+#: uc_paymaster.module:131;147
 msgid "VAT 10%"
 msgstr ""
 
-#: uc_paymaster.module:124;140
+#: uc_paymaster.module:132;148
 msgid "VAT formula 18/118"
 msgstr ""
 
-#: uc_paymaster.module:125;141
+#: uc_paymaster.module:133;149
 msgid "VAT formula 10/110"
 msgstr ""
 
-#: uc_paymaster.module:126;142
+#: uc_paymaster.module:134;150
 msgid "VAT 0%"
 msgstr ""
 
-#: uc_paymaster.module:127;143
+#: uc_paymaster.module:135;151
 msgid "No VAT"
 msgstr ""
 
-#: uc_paymaster.module:136
+#: uc_paymaster.module:144
 msgid "VAT for delivery for online invoicing"
 msgstr ""
 
-#: uc_paymaster.module:190
+#: uc_paymaster.module:207
 msgid "Delivery of order #@orderid"
 msgstr ""
 
-#: uc_paymaster.module:203
-msgid "Submit Order"
+#: uc_paymaster.module:221
+msgid "Submit order"
 msgstr ""
 
-#: uc_paymaster.module:239
+#: uc_paymaster.module:320;334
+msgid "Payment received from PayMaster"
+msgstr ""
+
+#: uc_paymaster.module:322
 msgid "Order was payed through Paymaster Merchant Interface @trans, @date. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency ."
 msgstr ""
 
-#: uc_paymaster.module:254;16
+#: uc_paymaster.module:335
+msgid "Warning payment transaction @trans, @date received from PayMaster is not correct. Please check it. Payment method is @method. PayerId is @payerid . Customer payed @amount @currency ."
+msgstr ""
+
+#: uc_paymaster.module:359;28
 msgid "Congratulations"
 msgstr ""
 
-#: uc_paymaster.module:255
+#: uc_paymaster.module:360
 msgid "Order was successfully paid!"
 msgstr ""
 
-#: uc_paymaster.module:266
+#: uc_paymaster.module:370
 msgid "Payment error"
 msgstr ""
 
-#: uc_paymaster.module:267
+#: uc_paymaster.module:371
 msgid "Unfortunately your order is not paid. Maybe you should try again?!"
 msgstr ""
 
-#: uc_paymaster.module:10
+#: uc_paymaster.module:22
 msgid "Result"
 msgstr ""
 
-#: uc_paymaster.module:22
+#: uc_paymaster.module:34
 msgid "Sorry"
 msgstr ""
 

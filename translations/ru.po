@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2017-06-23 13:50+0300\n"
-"PO-Revision-Date: 2017-06-23 14:03+0300\n"
+"POT-Creation-Date: 2017-07-07 02:21+0300\n"
+"PO-Revision-Date: 2017-07-07 02:30+0300\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,75 +21,98 @@ msgstr ""
 "Last-Translator: \n"
 "Language: ru\n"
 
-#: uc_paymaster.module:60;61 uc_paymaster.info:0
+#: uc_paymaster.module:11
+msgid ""
+"Please check settings in PayMaster Merchant interface https://paymaster.ru/"
+"partners/ru and setup it in Drupal site."
+msgstr ""
+"Пожалуйста, проверьте настройки в интерфейсе продавца системы Paymaster  "
+"https://paymaster.ru/partners/ru и установки в Drupal-сайте."
+
+#: uc_paymaster.module:57;58 uc_paymaster.info:0
 msgid "PayMaster"
 msgstr "PayMaster"
 
-#: uc_paymaster.module:62
+#: uc_paymaster.module:59
 msgid "Pay with PayMaster."
 msgstr "Оплачивайте с PayMaster."
 
-#: uc_paymaster.module:84
+#: uc_paymaster.module:83
+msgid ""
+"After order confirmation you will be directed at PayMaster payment system."
+msgstr ""
+"После подтверждения заказа будет создан счет, и вы будете направлены на "
+"страницу оплаты."
+
+#: uc_paymaster.module:90
 msgid "Merchant id"
 msgstr "ID продавца"
 
-#: uc_paymaster.module:89
+#: uc_paymaster.module:95
 msgid "Merchant secret key"
-msgstr "Секретный ключ продавца для проверки hah"
+msgstr "Секретный ключ продавца для проверки"
 
-#: uc_paymaster.module:94
+#: uc_paymaster.module:100
+msgid "Hash method for SIGN request option"
+msgstr "Выберите метод, которым будет подписываться запрос"
+
+#: uc_paymaster.module:106
 msgid "Currency"
 msgstr "Валюта (ее код)"
 
-#: uc_paymaster.module:99
+#: uc_paymaster.module:111
 msgid "Payment details"
 msgstr "Детали платежа"
 
-#: uc_paymaster.module:104
+#: uc_paymaster.module:116
 msgid "Order status after payment"
 msgstr "Статус заказа после успешного платежа"
 
-#: uc_paymaster.module:120
+#: uc_paymaster.module:128
 msgid "VAT for @node_product_type for online invoicing"
 msgstr "НДС для типа товара @node_product_type для онлайн кассы"
 
-#: uc_paymaster.module:122;138
+#: uc_paymaster.module:130;146
 msgid "VAT 18%"
 msgstr "НДС 18%"
 
-#: uc_paymaster.module:123;139
+#: uc_paymaster.module:131;147
 msgid "VAT 10%"
 msgstr "НДС 10%"
 
-#: uc_paymaster.module:124;140
+#: uc_paymaster.module:132;148
 msgid "VAT formula 18/118"
 msgstr "НДС по формуле 18/118"
 
-#: uc_paymaster.module:125;141
+#: uc_paymaster.module:133;149
 msgid "VAT formula 10/110"
 msgstr "НДС по формуле 10/110"
 
-#: uc_paymaster.module:126;142
+#: uc_paymaster.module:134;150
 msgid "VAT 0%"
 msgstr "НДС 0%"
 
-#: uc_paymaster.module:127;143
+#: uc_paymaster.module:135;151
 msgid "No VAT"
 msgstr "Без НДС"
 
-#: uc_paymaster.module:136
+#: uc_paymaster.module:144
 msgid "VAT for delivery for online invoicing"
 msgstr "НДС для онлайн кассы для доставки товара"
 
-#: uc_paymaster.module:190
+#: uc_paymaster.module:207
 msgid "Delivery of order #@orderid"
 msgstr "Доставка товара по заказу №@orderid"
 
-#: uc_paymaster.module:203
-msgid "Submit Order"
+#: uc_paymaster.module:221
+msgid "Submit order"
 msgstr "Подтвердить заказ"
 
-#: uc_paymaster.module:239
+#: uc_paymaster.module:320;334
+msgid "Payment received from PayMaster"
+msgstr "Оплата получена через  PayMaster"
+
+#: uc_paymaster.module:322
 msgid ""
 "Order was payed through Paymaster Merchant Interface @trans, @date. Payment "
 "method is @method. PayerId is @payerid . Customer payed @amount @currency ."
@@ -98,29 +121,39 @@ msgstr ""
 "@trans, дата @date. Метод оплаты это @method. Идентификатор плательщика "
 "@payerid . Покупатель оплатил через сервис @amount @currency ."
 
-#: uc_paymaster.module:254;16
+#: uc_paymaster.module:335
+msgid ""
+"Warning payment transaction @trans, @date received from PayMaster is not "
+"correct. Please check it. Payment method is @method. PayerId is @payerid . "
+"Customer payed @amount @currency ."
+msgstr ""
+"Предупреждение платежа @trans, полученных от казначея @date не является "
+"правильным. Пожалуйста, проверьте его. Метод оплаты является @method. "
+"PayerId-@payerid. Покупатель оплатил @amount @currency."
+
+#: uc_paymaster.module:359;28
 msgid "Congratulations"
 msgstr "Поздравляем"
 
-#: uc_paymaster.module:255
+#: uc_paymaster.module:360
 msgid "Order was successfully paid!"
 msgstr "Ваш заказ был успешно оплачен!"
 
-#: uc_paymaster.module:266
+#: uc_paymaster.module:370
 msgid "Payment error"
 msgstr "Ошибка оплаты"
 
-#: uc_paymaster.module:267
+#: uc_paymaster.module:371
 msgid "Unfortunately your order is not paid. Maybe you should try again?!"
 msgstr ""
 "К сожалению ваш заказ так и не был оплачен. Может быть стоит вернуться "
 "назад и попробовать другой способ оплаты?!"
 
-#: uc_paymaster.module:10
+#: uc_paymaster.module:22
 msgid "Result"
 msgstr "Результат"
 
-#: uc_paymaster.module:22
+#: uc_paymaster.module:34
 msgid "Sorry"
 msgstr "Извините"
 
