@@ -130,14 +130,14 @@ function uc_payment_method_paymaster($op, &$order, $form = NULL, &$form_state = 
                 $form["uc_paymaster_product_{$node_product_type}_vat"] = array(
                     '#type' => 'select',
                     '#title' => t('VAT for @node_product_type for online invoicing', array('@node_product_type' => $node_product_type)),
-                    '#options' => [
+                    '#options' => array(
                         'vat18' => t('VAT 18%'),
                         'vat10' => t('VAT 10%'),
                         'vat118' => t('VAT formula 18/118'),
                         'vat110' => t('VAT formula 10/110'),
                         'vat0' => t('VAT 0%'),
                         'no_vat' => t('No VAT'),
-                    ],
+                    ),
                     '#default_value' => variable_get("uc_paymaster_product_{$node_product_type}_vat", 'vat18'),
                 );
             }
